@@ -14,17 +14,31 @@ spring:
         webflux:
           routes:
             - id: billing-route
-              uri: http://localhost:8082
+              uri: lb://billing
               predicates:
                 - Path=/api/v1/customers/me/orders/{orderId}/invoice
                 - Method=GET
             - id: ordering-route
-              uri: http://localhost:8080
+              uri: lb://ordering
               predicates:
                 - Path=/api/v1/orders/**,/api/v1/customers/**
             - id: product-catalog-route
-              uri: http://localhost:8083
+              uri: lb://product-catalog
               predicates:
                 - Path=/api/v1/products/**,/api/v1/categories/**
                 - Method=GET,POST,PUT,DELETE,OPTIONS
+            - id: product-catalog-test-route
+              uri: http://localhost:8083
+              predicates:
+                - Path=/products/**
+              filters:
+                - RewritePath=/products/?(?<segment>.*), /api/v1/products$\{segment}
+                - AddResponseHeader=X-Path-rewrite-info, Path have been rewrite do /ap1/v1/products
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: false
+    fetch-registry: true
 
