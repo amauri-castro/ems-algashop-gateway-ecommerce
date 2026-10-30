@@ -12,6 +12,19 @@ spring:
     gateway:
       server:
         webflux:
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: http://localhost:4200
+                allowedHeaders: '*'
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
           routes:
             - id: billing-route
               uri: lb://billing
@@ -28,12 +41,16 @@ spring:
                 - Path=/api/v1/products/**,/api/v1/categories/**
                 - Method=GET,POST,PUT,DELETE,OPTIONS
             - id: product-catalog-test-route
-              uri: http://localhost:8083
+              uri: lb://product-catalog
               predicates:
                 - Path=/products/**
               filters:
                 - RewritePath=/products/?(?<segment>.*), /api/v1/products$\{segment}
                 - AddResponseHeader=X-Path-rewrite-info, Path have been rewrite do /ap1/v1/products
+            - id: user-management-route
+              uri: lb://authorization-server
+              predicates:
+                - Path=/api/v1/users/**
 
 eureka:
   client:
@@ -41,4 +58,13 @@ eureka:
       defaultZone: http://localhost:8761/eureka
     register-with-eureka: false
     fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, gateway
+  endpoint:
+    gateway:
+      enabled: true
 
