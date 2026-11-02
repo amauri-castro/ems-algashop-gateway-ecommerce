@@ -8,6 +8,11 @@ logging:
 spring:
   application:
     name: gateway-ecommerce
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth.algashop.local:8081
   cloud:
     gateway:
       server:
@@ -29,16 +34,17 @@ spring:
             - id: billing-route
               uri: lb://billing
               predicates:
-                - Path=/api/v1/customers/me/orders/{orderId}/invoice
-                - Method=GET
+                - Path=/api/v1/customers/me/orders/{orderId}/invoice,/api/v1/orders/{orderId}/invoice,/api/v1/customers/me/credit-cards,/api/v1/customers/me/credit-cards/{creditCardId}
+                - Method=GET,POST,PUT,DELETE,OPTIONS
             - id: ordering-route
               uri: lb://ordering
               predicates:
-                - Path=/api/v1/orders/**,/api/v1/customers/**
+                - Path=/api/v1/orders/**,/api/v1/customers/**,/api/v1/shipping-cost-previews
+                - Method=GET,POST,PUT,DELETE,OPTIONS
             - id: product-catalog-route
               uri: lb://product-catalog
               predicates:
-                - Path=/api/v1/products/**,/api/v1/categories/**
+                - Path=/api/v1/products/**,/api/v1/categories/**,/api/v1/upload-requests/**
                 - Method=GET,POST,PUT,DELETE,OPTIONS
             - id: product-catalog-test-route
               uri: lb://product-catalog
@@ -46,11 +52,12 @@ spring:
                 - Path=/products/**
               filters:
                 - RewritePath=/products/?(?<segment>.*), /api/v1/products$\{segment}
-                - AddResponseHeader=X-Path-rewrite-info, Path have been rewrite do /ap1/v1/products
+                - AddResponseHeader=X-Path-rewrite-info, Path have been rewrite to /api/v1/products
             - id: user-management-route
               uri: lb://authorization-server
               predicates:
                 - Path=/api/v1/users/**
+                - Method=GET,POST,PUT,DELETE,OPTIONS
 
 eureka:
   client:
