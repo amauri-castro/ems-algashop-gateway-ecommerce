@@ -81,7 +81,7 @@ spring:
                 - Path=/api/v1/products/**,/api/v1/categories/**,/api/v1/upload-requests/**
                 - Method=GET,POST,PUT,DELETE,OPTIONS
               filters:
-                - LocalResponseCache=10m,10MB
+                - LocalResponseCache=1m,30MB
                 - name: RequestRateLimiter
                   args:
                     redis-rate-limiter:
